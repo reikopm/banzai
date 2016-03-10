@@ -1,0 +1,5 @@
+Reading fastq file 
+Creating index of unique k-mers 
+Detecting chimeras 
+Counting unique k-mers 
+all_lib/OTUs_swarm/OTUs.fasta 
