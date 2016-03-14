@@ -26,11 +26,11 @@ START_TIME=$(date +%Y%m%d_%H%M)
 
 # MAKE MODIFICATIONS HERE 
 # For SCRIPT_DIR, DATA_DIR and MY_SCRIPT_DIR.  SCRIPT_DIR is the location of the banzai repository.  For mbonteam this should point to /MBON/mbonteam/dev DATA_DIR setup is specific to MBARI BOG data which is stored on a linked network drive.  Data are copied to DATA_DIR for processing and then delete.  MY_SCRIPT_DIR contains custom banzai.sh, banzai_params.sh, and metadata for target loci.
-CURR_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-SCRIPT_DIR=$(dirname $CURR_DIR)
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DATA_DIR="$SCRIPT_DIR/test/raw/BOG_data"
+MY_SCRIPT_DIR=$SCRIPT_DIR
 
-DATA_DIR="/home/reiko/MBARI/reiko/raw/BOG_data"
-MY_SCRIPT_DIR="/home/reiko/MBARI/reiko/scripts"
+mkdir -p $DATA_DIR
 
 # Read in the parameter file (was source "$SCRIPT_DIR/banzai_params.sh"; now argument 1)
 param_file="${1}"
