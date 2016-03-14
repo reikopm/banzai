@@ -101,7 +101,7 @@ fi
 
 # make an analysis directory with starting time timestamp
 ANALYSIS_DIR="${ANALYSIS_DIRECTORY}"/Analysis_"${START_TIME}"
-mkdir "${ANALYSIS_DIR}"
+mkdir -p "${ANALYSIS_DIR}"
 
 # Write a log file of output from this script (everything that prints to terminal)
 LOGFILE="${ANALYSIS_DIR}"/logfile.txt
@@ -278,7 +278,7 @@ for C_LIB in $LIBS; do
 
 #	LIB_OUTPUT_DIR="${ANALYSIS_DIR}"/${CURRENT_LIB##*/} #old code
 	LIB_OUTPUT_DIR="${ANALYSIS_DIR}"/${C_LIB}
-	mkdir "${LIB_OUTPUT_DIR}"
+	mkdir -p "${LIB_OUTPUT_DIR}"
 
 	##############################################################################
 	# MERGE PAIRED-END READS AND QUALITY FILTER (PEAR)
@@ -427,7 +427,7 @@ for C_LIB in $LIBS; do
 	################################################################################
 	# make a directory to put all the demultiplexed files in
 	DEMULTIPLEXED_DIR="${LIB_OUTPUT_DIR}"/demultiplexed
-	mkdir "${DEMULTIPLEXED_DIR}"
+	mkdir -p "${DEMULTIPLEXED_DIR}"
 
 	# Copy sequences to fasta files into separate directories based on tag sequence on left side of read
 	# TODO test for speed against removing the tag while finding it: wrap first tag regex in gsub(/pattern/,""):  awk 'gsub(/^.{0,9}'"$TAG_SEQ"'/,""){if . . .
@@ -438,7 +438,7 @@ for C_LIB in $LIBS; do
 	#for TAG_SEQ in $TAGS; do
 	TAG_SEQ="${TAGS_SEQ[$ii]}"
 	(	TAG_DIR="${LIB_OUTPUT_DIR}"/demultiplexed/tag_"${TAG_SEQ}"
-		mkdir "${TAG_DIR}"
+		mkdir -p "${TAG_DIR}"
 		demult_file_L="${TAG_DIR}"/1_tagL_removed.fasta
 	    demult_file_R="${TAG_DIR}"/2_notags.fasta
 
@@ -516,7 +516,7 @@ if [ "$CONCATENATE_SAMPLES" = "YES" ]; then
 	# TODO MOVE THE VARIABLE ASSIGNMENT TO TOP; MOVE MKDIR TO TOP OF CONCAT IF LOOP
 	echo $(date +%H:%M) "Concatenating fasta files..."
 	CONCAT_DIR="$ANALYSIS_DIR"/all_lib
-	mkdir "${CONCAT_DIR}"
+	mkdir -p "${CONCAT_DIR}"
 	CONCAT_FILE="${CONCAT_DIR}"/1_demult_concat.fasta
 
 	# TODO could move this into above loop after demultiplexing?
@@ -707,7 +707,7 @@ if [ "$CONCATENATE_SAMPLES" = "YES" ]; then
 
 	# make a directory to store the temporary duplicate files
 	temp_dir="${DEREP_INPUT%/*}"/dup_temp
-	mkdir "${temp_dir}"
+	mkdir -p "${temp_dir}"
 
 	# set a file prefix for the batches of samples
 	sample_batch_prefix="${temp_dir}"/sample_batch_
