@@ -1,5 +1,9 @@
-# Reiko's 18S
+#!/bin/bash
 
-bash BOG18S_banzai.sh ./BOG_kelp18S/BOG_kelp18S_params.sh
+TEST_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $TEST_DIR
+
+# Reiko's 18S
+bash ../BOG18S_banzai.sh ./BOG_kelp18S/BOG_kelp18S_params.sh
 
 # Kevan's 18S
