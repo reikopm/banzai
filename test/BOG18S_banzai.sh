@@ -246,8 +246,7 @@ fi
 #LIB_TAG_MOD=$( awk -F',' -v LIBCOL=$LIB_COL -v TAGCOL=$TAG_COL 'NR>1 { print "lib_" $LIBCOL "_tag_" $TAGCOL }' $SEQUENCING_METADATA | sort | uniq )
 LIB_TAG_MOD_COL=$(awk -F',' -v LIB_TAG_MOD_COL_NAME=$LIBRARY_TAG_COMBO_COLUMN_NAME '{for (i=1;i<=NF;i++) if($i == LIB_TAG_MOD_COL_NAME) print i; exit}' $SEQUENCING_METADATA)
 LIB_TAG_MOD=$(awk -F',' -v LIBTAGMODCOL=$LIB_TAG_MOD_COL 'NR>1 {print $LIBTAGMODCOL}' $SEQUENCING_METADATA)
-echo "LIB_TAG_MOD"
-LIB_TAG_MOD
+echo "LIB_TAG_MOD = $LIB_TAG_MOD"
 # create a file to store tag efficiency data
 TAG_COUNT="${ANALYSIS_DIR}"/tag_count.txt
 echo "library   tag   left_tagged   right_tagged" >> "${TAG_COUNT}"
