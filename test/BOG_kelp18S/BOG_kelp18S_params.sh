@@ -9,12 +9,15 @@ DEBUG1="YES"
 #PARENT_DIR="{$HOME_DIR}/raw/test_data/B"
 #W:\Regions\NortheastPacific\MBON\BOG_eDNA_Z_July2015\BOG_18S_Z_Indexed\BOG_18S_Z_indexed_Seqs
 PARENT_DIR="/BOG_Archive/Stanford_Extraction_Methods/Stanford_18S_Indexed/Stanford_18S_Indexed_Seqs/C"
-HOME_DIR="/home/reiko/MBARI/reiko"
+
+# Use test direcory for source data and for work area
+CURR_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+HOME_DIR=$(dirname $CURR_DIR)
 
 # Where is the sequencing metadata file? (SEE FORMATTING GUIDELINES IN README!)
 #SEQUENCING_METADATA="{$HOME_DIR}/raw/test_data/test_data_metadata.csv"
 #SEQUENCING_METADATA="{$HOME_DIR}/scripts/BOG18S_eDNA_metadata_one_lib_test.csv"
-SEQUENCING_METADATA="$HOME_DIR/scripts/BOG_kelp18S/BOG_kelp18S_metadata_test.csv"
+SEQUENCING_METADATA="$CURR_DIR/BOG_kelp18S_metadata_test.csv"
 
 
 ################################################################################
@@ -266,7 +269,7 @@ RENAME_READS="YES"
 
 # If you want to receive a text message when the pipeline finishes, input your number here:
 NOTIFY_EMAIL="NO"
-EMAIL_ADDRESS="reiko@mbari.org"
+EMAIL_ADDRESS="mccann@mbari.org"
 
 
 
