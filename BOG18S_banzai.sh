@@ -1145,15 +1145,15 @@ fi
 		# sed -i -e 's|DUP|OTU|' "${DIR}"/BOG18S_tpath_species.csv 
 		# echo "#OTU_ID	size	taxonomy" > "${DIR}"/BOG18S_obs_md.txt
 		# sed  's|,|\t|g' < "${DIR}"/BOG18S_tpath_species.csv >> "${DIR}"/BOG18S_obs_md.txt
-		echo "Make observational metadata, concatenate taxa ranks. python $MY_SCRIPT_DIR/Merge_taxa_ranks.py" "${ANALYSIS_DIR}"/all_lib
-		python "$MY_SCRIPT_DIR"/Merge_taxa_ranks.py "${ANALYSIS_DIR}"/all_lib
+		echo "Make observational metadata, concatenate taxa ranks. python $SCRIPT_DIR/python/Merge_taxa_ranks.py" "${ANALYSIS_DIR}"/all_lib
+		python "$SCRIPT_DIR"/python/Merge_taxa_ranks.py "${ANALYSIS_DIR}"/all_lib
 		sed -i -e 's/DUP/OTU/' -e 's/,/\t/' "${ANALYSIS_DIR}"/all_lib/phinch_obs_md.csv
 		sed -i -e 's/,/;/g' "${ANALYSIS_DIR}"/all_lib/phinch_obs_md.csv
 		echo "#OTU_ID	taxonomy" > "${ANALYSIS_DIR}"/all_lib/BOG18S_obs_md.txt
 		cat "${ANALYSIS_DIR}"/all_lib/phinch_obs_md.csv >> "${ANALYSIS_DIR}"/all_lib/BOG18S_obs_md.txt
 		echo $(date +%H:%M) "Create new otu tables with taxonomic ranks"
 		echo " Merge taxonomy to OTU table.  Does not include no hits, not assigned.  Output is OTU_table_taxa.txt
-		python merge_otu_taxa.py " "${ANALYSIS_DIR}"/all_lib
+		python "$SCRIPT_DIR"/python/merge_otu_taxa.py " "${ANALYSIS_DIR}"/all_lib
 		
 # Stuff for phinch.  Add prefixes for the taxonomic ranks.  Then merge by OTU id and concatenate the ranks
 		echo $(date +%H:%M) "Create Phinch style taxonomic names, ie. p__ prefix for phylum"
@@ -1164,8 +1164,8 @@ fi
 		sed -i -e 's|,"|,"c__|' "${DIR}"/BOG18S_meganout_Class_mod.csv
 		sed -i -e 's|,"|,"o__|' "${DIR}"/BOG18S_meganout_Order_mod.csv
 		sed -i -e 's|,"|,"k__|' "${DIR}"/BOG18S_meganout_Kingdom_mod.csv
-		echo 'Make phinch observational metadata, python "$MY_SCRIPT_DIR"/Merge_taxa_ranks.py' "${ANALYSIS_DIR}"/all_lib
-		python "$MY_SCRIPT_DIR"/Merge_taxa_ranks.py "${ANALYSIS_DIR}"/all_lib
+		echo 'Make phinch observational metadata, python "$SCRIPT_DIR"/python/Merge_taxa_ranks.py' "${ANALYSIS_DIR}"/all_lib
+		python "$SCRIPT_DIR"/python/Merge_taxa_ranks.py "${ANALYSIS_DIR}"/all_lib
 		sed -i -e 's/DUP/OTU/' -e 's/,/\t/' "${ANALYSIS_DIR}"/all_lib/phinch_obs_md.csv
 		sed -i -e 's/,/;/g' "${ANALYSIS_DIR}"/all_lib/phinch_obs_md.csv
 		echo "#OTU_ID	taxonomy" > "${ANALYSIS_DIR}"/all_lib/phinch_obs_md.txt
@@ -1173,10 +1173,10 @@ fi
 		
 echo $(date +%H:%M) "Create new otu tables with Phinch style ranks"
 echo " Merge taxonomy to OTU table.  Does not include no hits, not assigned.  Output is OTU_table_taxa_phinch.txt with Phinch prefixes denoting taxonomic rank.  i.e. p__Proteobacteria"
-python merge_otu_taxa2.py "${ANALYSIS_DIR}"/all_lib
+python "$SCRIPT_DIR"/python/merge_otu_taxa2.py "${ANALYSIS_DIR}"/all_lib
 # python adds quotes even though the string is not quoted.  To get it to not put quotes in is a pain.  This is totally stupid
 sed -i 's/"//g' "${ANALYSIS_DIR}"/all_lib/OTU_table_taxa_phinch.txt
-python merge_otu_taxa_all.py "${ANALYSIS_DIR}"/all_lib
+python "$SCRIPT_DIR"/python/merge_otu_taxa_all.py "${ANALYSIS_DIR}"/all_lib
 
 echo $(date +%H:%M) "Create biom file BOG18S.biom" 
 biom convert -i "${ANALYSIS_DIR}"/all_lib/OTUs_swarm/OTU_table.txt -o "${ANALYSIS_DIR}"/all_lib/BOG18S_json.biom --table-type="OTU table" --to-json
@@ -1190,7 +1190,7 @@ biom add-metadata -i "${ANALYSIS_DIR}"/all_lib/BOG18S_json_md.biom -o "${ANALYSI
 
 echo "Create a PEAR report with the names of the read files and the assembled, discarded, and not assembled read numbers.  The report also includes the PEAR parameters"
 echo "mk_PEAR_report.py " "${ANALYSIS_DIR}"
-python mk_PEAR_report.py "${ANALYSIS_DIR}"
+python "$SCRIPT_DIR"/python/mk_PEAR_report.py "${ANALYSIS_DIR}"
 
 FINISH_TIME=$(date +%Y%m%d_%H%M)
 if [ "$NOTIFY_EMAIL" = "YES" ]; then
