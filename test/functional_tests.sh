@@ -1,6 +1,7 @@
 #!/bin/bash
 
 TEST_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_DIR=$(dirname $TEST_DIR)
 cd $TEST_DIR
 
 # Reiko's 18S
