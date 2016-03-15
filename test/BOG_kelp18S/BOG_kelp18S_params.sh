@@ -180,7 +180,7 @@ remove_chimeras="YES"
 # Specify the path to the BLAST database.
 # Note this should be a path to any one of three files WITHOUT their extension *.nhr, *.nin, or *.nsq
 #BLAST_DB='/MBON/blastdb/nr/nr'
-BLAST_DB='/MBON/blastdb/nt/nt'
+#BLAST_DB='/MBON/blastdb/nt/nt'
 #BLAST_DB='/MBON/blastdb/Tarav9/Tarav9'
 #BLAST_DB='/atlasMBON/blastdb/nt/nt'
 #BLAST_DB='/MBON/blastdb/greengenes/gg_13_5'
@@ -188,6 +188,7 @@ BLAST_DB='/MBON/blastdb/nt/nt'
 # new28s from Shannon Johnson, extracted from Genbank for locus 28S
 #BLAST_DB='/MBON/mbonteam/MBARI/reiko/raw/new28S/28s_new'
 #BLAST_DB='/MBON/blastdb/Silva/SILVA123_SSURef.ncbi.db'
+BLAST_DB="$HOME_DIR/kevanMBARI_18S_test_data/Database/testdb.db"
 # BLAST PARAMETERS
 PERCENT_IDENTITY="97"
 WORD_SIZE="20"
