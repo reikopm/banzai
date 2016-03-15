@@ -24,7 +24,7 @@ def main(argv):
 			t = row[1]
 			mapper[i] = t        
 	i=1
-	with open('./OTUs_swarm/OTU_table.txt', 'r') as f2:
+	with open(os.path.join(ddir,'OTUs_swarm/OTU_table.txt'), 'r') as f2:
 		with open('OTU_table_taxa_phinch.txt', 'wb') as fo:
 			reader = csv.reader(f2, delimiter='\t')
 			writer = csv.writer(fo, delimiter='\t')
