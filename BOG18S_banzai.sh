@@ -26,9 +26,11 @@ START_TIME=$(date +%Y%m%d_%H%M)
 
 # MAKE MODIFICATIONS HERE 
 # For SCRIPT_DIR, DATA_DIR and MY_SCRIPT_DIR.  SCRIPT_DIR is the location of the banzai repository.  For mbonteam this should point to /MBON/mbonteam/dev DATA_DIR setup is specific to MBARI BOG data which is stored on a linked network drive.  Data are copied to DATA_DIR for processing and then delete.  MY_SCRIPT_DIR contains custom banzai.sh, banzai_params.sh, and metadata for target loci.
-SCRIPT_DIR="/home/reiko/banzai"
-DATA_DIR="/home/reiko/MBARI/reiko/raw/BOG_data"
-MY_SCRIPT_DIR="/home/reiko/MBARI/reiko/scripts"
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DATA_DIR="$SCRIPT_DIR/test/raw/BOG_data"
+MY_SCRIPT_DIR=$SCRIPT_DIR
+
+mkdir -p $DATA_DIR
 
 # Read in the parameter file (was source "$SCRIPT_DIR/banzai_params.sh"; now argument 1)
 param_file="${1}"
@@ -99,7 +101,7 @@ fi
 
 # make an analysis directory with starting time timestamp
 ANALYSIS_DIR="${ANALYSIS_DIRECTORY}"/Analysis_"${START_TIME}"
-mkdir "${ANALYSIS_DIR}"
+mkdir -p "${ANALYSIS_DIR}"
 
 # Write a log file of output from this script (everything that prints to terminal)
 LOGFILE="${ANALYSIS_DIR}"/logfile.txt
@@ -244,8 +246,7 @@ fi
 #LIB_TAG_MOD=$( awk -F',' -v LIBCOL=$LIB_COL -v TAGCOL=$TAG_COL 'NR>1 { print "lib_" $LIBCOL "_tag_" $TAGCOL }' $SEQUENCING_METADATA | sort | uniq )
 LIB_TAG_MOD_COL=$(awk -F',' -v LIB_TAG_MOD_COL_NAME=$LIBRARY_TAG_COMBO_COLUMN_NAME '{for (i=1;i<=NF;i++) if($i == LIB_TAG_MOD_COL_NAME) print i; exit}' $SEQUENCING_METADATA)
 LIB_TAG_MOD=$(awk -F',' -v LIBTAGMODCOL=$LIB_TAG_MOD_COL 'NR>1 {print $LIBTAGMODCOL}' $SEQUENCING_METADATA)
-echo "LIB_TAG_MOD"
-LIB_TAG_MOD
+echo "LIB_TAG_MOD = $LIB_TAG_MOD"
 # create a file to store tag efficiency data
 TAG_COUNT="${ANALYSIS_DIR}"/tag_count.txt
 echo "library   tag   left_tagged   right_tagged" >> "${TAG_COUNT}"
@@ -276,7 +277,7 @@ for C_LIB in $LIBS; do
 
 #	LIB_OUTPUT_DIR="${ANALYSIS_DIR}"/${CURRENT_LIB##*/} #old code
 	LIB_OUTPUT_DIR="${ANALYSIS_DIR}"/${C_LIB}
-	mkdir "${LIB_OUTPUT_DIR}"
+	mkdir -p "${LIB_OUTPUT_DIR}"
 
 	##############################################################################
 	# MERGE PAIRED-END READS AND QUALITY FILTER (PEAR)
@@ -425,7 +426,7 @@ for C_LIB in $LIBS; do
 	################################################################################
 	# make a directory to put all the demultiplexed files in
 	DEMULTIPLEXED_DIR="${LIB_OUTPUT_DIR}"/demultiplexed
-	mkdir "${DEMULTIPLEXED_DIR}"
+	mkdir -p "${DEMULTIPLEXED_DIR}"
 
 	# Copy sequences to fasta files into separate directories based on tag sequence on left side of read
 	# TODO test for speed against removing the tag while finding it: wrap first tag regex in gsub(/pattern/,""):  awk 'gsub(/^.{0,9}'"$TAG_SEQ"'/,""){if . . .
@@ -436,7 +437,7 @@ for C_LIB in $LIBS; do
 	#for TAG_SEQ in $TAGS; do
 	TAG_SEQ="${TAGS_SEQ[$ii]}"
 	(	TAG_DIR="${LIB_OUTPUT_DIR}"/demultiplexed/tag_"${TAG_SEQ}"
-		mkdir "${TAG_DIR}"
+		mkdir -p "${TAG_DIR}"
 		demult_file_L="${TAG_DIR}"/1_tagL_removed.fasta
 	    demult_file_R="${TAG_DIR}"/2_notags.fasta
 
@@ -514,7 +515,7 @@ if [ "$CONCATENATE_SAMPLES" = "YES" ]; then
 	# TODO MOVE THE VARIABLE ASSIGNMENT TO TOP; MOVE MKDIR TO TOP OF CONCAT IF LOOP
 	echo $(date +%H:%M) "Concatenating fasta files..."
 	CONCAT_DIR="$ANALYSIS_DIR"/all_lib
-	mkdir "${CONCAT_DIR}"
+	mkdir -p "${CONCAT_DIR}"
 	CONCAT_FILE="${CONCAT_DIR}"/1_demult_concat.fasta
 
 	# TODO could move this into above loop after demultiplexing?
@@ -705,7 +706,7 @@ if [ "$CONCATENATE_SAMPLES" = "YES" ]; then
 
 	# make a directory to store the temporary duplicate files
 	temp_dir="${DEREP_INPUT%/*}"/dup_temp
-	mkdir "${temp_dir}"
+	mkdir -p "${temp_dir}"
 
 	# set a file prefix for the batches of samples
 	sample_batch_prefix="${temp_dir}"/sample_batch_
@@ -1144,15 +1145,15 @@ fi
 		# sed -i -e 's|DUP|OTU|' "${DIR}"/BOG18S_tpath_species.csv 
 		# echo "#OTU_ID	size	taxonomy" > "${DIR}"/BOG18S_obs_md.txt
 		# sed  's|,|\t|g' < "${DIR}"/BOG18S_tpath_species.csv >> "${DIR}"/BOG18S_obs_md.txt
-		echo "Make observational metadata, concatenate taxa ranks. python $MY_SCRIPT_DIR/Merge_taxa_ranks.py" "${ANALYSIS_DIR}"/all_lib
-		python "$MY_SCRIPT_DIR"/Merge_taxa_ranks.py "${ANALYSIS_DIR}"/all_lib
+		echo "Make observational metadata, concatenate taxa ranks. python $SCRIPT_DIR/python/Merge_taxa_ranks.py" "${ANALYSIS_DIR}"/all_lib
+		python "$SCRIPT_DIR"/python/Merge_taxa_ranks.py "${ANALYSIS_DIR}"/all_lib
 		sed -i -e 's/DUP/OTU/' -e 's/,/\t/' "${ANALYSIS_DIR}"/all_lib/phinch_obs_md.csv
 		sed -i -e 's/,/;/g' "${ANALYSIS_DIR}"/all_lib/phinch_obs_md.csv
 		echo "#OTU_ID	taxonomy" > "${ANALYSIS_DIR}"/all_lib/BOG18S_obs_md.txt
 		cat "${ANALYSIS_DIR}"/all_lib/phinch_obs_md.csv >> "${ANALYSIS_DIR}"/all_lib/BOG18S_obs_md.txt
 		echo $(date +%H:%M) "Create new otu tables with taxonomic ranks"
 		echo " Merge taxonomy to OTU table.  Does not include no hits, not assigned.  Output is OTU_table_taxa.txt
-		python merge_otu_taxa.py " "${ANALYSIS_DIR}"/all_lib
+		python "$SCRIPT_DIR"/python/merge_otu_taxa.py " "${ANALYSIS_DIR}"/all_lib
 		
 # Stuff for phinch.  Add prefixes for the taxonomic ranks.  Then merge by OTU id and concatenate the ranks
 		echo $(date +%H:%M) "Create Phinch style taxonomic names, ie. p__ prefix for phylum"
@@ -1163,8 +1164,8 @@ fi
 		sed -i -e 's|,"|,"c__|' "${DIR}"/BOG18S_meganout_Class_mod.csv
 		sed -i -e 's|,"|,"o__|' "${DIR}"/BOG18S_meganout_Order_mod.csv
 		sed -i -e 's|,"|,"k__|' "${DIR}"/BOG18S_meganout_Kingdom_mod.csv
-		echo 'Make phinch observational metadata, python "$MY_SCRIPT_DIR"/Merge_taxa_ranks.py' "${ANALYSIS_DIR}"/all_lib
-		python "$MY_SCRIPT_DIR"/Merge_taxa_ranks.py "${ANALYSIS_DIR}"/all_lib
+		echo 'Make phinch observational metadata, python "$SCRIPT_DIR"/python/Merge_taxa_ranks.py' "${ANALYSIS_DIR}"/all_lib
+		python "$SCRIPT_DIR"/python/Merge_taxa_ranks.py "${ANALYSIS_DIR}"/all_lib
 		sed -i -e 's/DUP/OTU/' -e 's/,/\t/' "${ANALYSIS_DIR}"/all_lib/phinch_obs_md.csv
 		sed -i -e 's/,/;/g' "${ANALYSIS_DIR}"/all_lib/phinch_obs_md.csv
 		echo "#OTU_ID	taxonomy" > "${ANALYSIS_DIR}"/all_lib/phinch_obs_md.txt
@@ -1172,10 +1173,10 @@ fi
 		
 echo $(date +%H:%M) "Create new otu tables with Phinch style ranks"
 echo " Merge taxonomy to OTU table.  Does not include no hits, not assigned.  Output is OTU_table_taxa_phinch.txt with Phinch prefixes denoting taxonomic rank.  i.e. p__Proteobacteria"
-python merge_otu_taxa2.py "${ANALYSIS_DIR}"/all_lib
+python "$SCRIPT_DIR"/python/merge_otu_taxa2.py "${ANALYSIS_DIR}"/all_lib
 # python adds quotes even though the string is not quoted.  To get it to not put quotes in is a pain.  This is totally stupid
 sed -i 's/"//g' "${ANALYSIS_DIR}"/all_lib/OTU_table_taxa_phinch.txt
-python merge_otu_taxa_all.py "${ANALYSIS_DIR}"/all_lib
+python "$SCRIPT_DIR"/python/merge_otu_taxa_all.py "${ANALYSIS_DIR}"/all_lib
 
 echo $(date +%H:%M) "Create biom file BOG18S.biom" 
 biom convert -i "${ANALYSIS_DIR}"/all_lib/OTUs_swarm/OTU_table.txt -o "${ANALYSIS_DIR}"/all_lib/BOG18S_json.biom --table-type="OTU table" --to-json
@@ -1189,7 +1190,7 @@ biom add-metadata -i "${ANALYSIS_DIR}"/all_lib/BOG18S_json_md.biom -o "${ANALYSI
 
 echo "Create a PEAR report with the names of the read files and the assembled, discarded, and not assembled read numbers.  The report also includes the PEAR parameters"
 echo "mk_PEAR_report.py " "${ANALYSIS_DIR}"
-python mk_PEAR_report.py "${ANALYSIS_DIR}"
+python "$SCRIPT_DIR"/python/mk_PEAR_report.py "${ANALYSIS_DIR}"
 
 FINISH_TIME=$(date +%Y%m%d_%H%M)
 if [ "$NOTIFY_EMAIL" = "YES" ]; then

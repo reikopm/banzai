@@ -13,13 +13,14 @@
 # If you want to run this interactively, just comment out the following line, un-comment the 8 lines after that, and make all of those the appropriate file paths/arguments (see numbers above).
 
 arguments<-commandArgs(TRUE)
-    # arguments <- c(
-      # "/home/mbonteam/MBARI/reiko/processed/debug.pdf", "/home/mbonteam/MBARI/reiko/processed/Analysis_20160105_1701/all_lib/OTUs_swarm/OTU_table.csv",
-      # "/home/mbonteam/MBARI/reiko/scripts/BOG18S_eDNA_metadata_one_lib_test.csv",
-      # "library",
-      # "tag_sequence",
-      # "sample_name",
-      # "sample_type")
+arguments <- c(
+  "/Users/threeprime/Desktop/debug.pdf",
+  "/Users/threeprime/temp_big/20150717_nextseq/Analysis_20151019_1918/all_lib/OTUs_swarm/OTU_table.csv",
+  "/Users/threeprime/temp_big/20150717_nextseq/SEQUENCING_POOL_20150618.csv",
+  "library",
+  "tag_sequence",
+  "sample_name",
+  "sample_type")
 
 
 pdf_file			<- arguments[1]
@@ -29,7 +30,7 @@ col_library		<- arguments[4]
 col_tagseq		<- arguments[5]
 col_samplename	<- arguments[6]
 col_sampletype	<- arguments[7]
-analysis_dir    <- dirname(arguments[2])
+
 
 
 # load required packages
@@ -84,7 +85,6 @@ metadata <- read.csv(metadata_file)
 # eliminate any columns that aren't going to be used
 metadata <- metadata[,c(col_library, col_tagseq, col_samplename, col_sampletype)]
 
-sample_names <-metadata[3]
 
 
 
@@ -101,25 +101,17 @@ sample_names <-metadata[3]
 # make a new column in the metadata that will link the OTU file and the sequencing pool
 # NOTE: The following line must directly correspond to the naming scheme used by banzai!
 # originally was a separate vector: sample_id <- paste("lib", metadata[,col_library], "tag", metadata[,col_tagseq], sep = "_")
-# metadata <- cbind(
-				# metadata, 
-				# sample_id = paste(
-					# "lib", 
-					# metadata[,col_library], 
-					# "tag", 
-					# metadata[,col_tagseq], 
-					# sep = "_"
-					# )
-				# )
-# BOG modification, our sample_id eliminates the words lib and tag, i.e. D3_CGAGGGAAAGTC				
 metadata <- cbind(
 				metadata, 
 				sample_id = paste(
+					"lib", 
 					metadata[,col_library], 
+					"tag", 
 					metadata[,col_tagseq], 
 					sep = "_"
 					)
 				)
+
 
 # Check for differences between the sample IDs in metadata and OTU table.
 if(length(setdiff(rownames(DATA), metadata$sample_id)) == 0 ){
@@ -140,32 +132,29 @@ metadata$sample_id %in% rownames(DATA)
 
 
 
-# if( inboth == 0){
-	# stop("Sample identifiers in metadata and OTU table do not correspond.")
-# } else if(inboth == maxboth){
+if( inboth == 0){
+	stop("Sample identifiers in metadata and OTU table do not correspond.")
+} else if(inboth == maxboth){
 	
-# }  else {
-	# print("something else")
-# }
+} else if(){
+	
+} else {
+	print("something else")
+}
 
 paste(nrow(DATA), "rows found in OTU table,", nrow(metadata), "rows found in metadata")
 nrow(DATA) 
-#if(TRUE){
-#	stop(nrow(DATA), " rows found in OTU table, ", nrow(metadata), " rows found in metadata, ")
-#}
-print("passed if(TRUE)")
+if(TRUE){
+	stop(nrow(DATA), " rows found in OTU table, ", nrow(metadata), " rows found in metadata, ")
+}
+print()
 
 length(metadata$sample_id)
 
 # link the metadata file to the OTU file
 tag_to_sequencing_data <- match(rownames(DATA), metadata$sample_id)
 tag_to_samplename <- metadata[tag_to_sequencing_data, arguments[6]]
-# print("DATA line 163")
-# rownames(DATA)
-# print("tag_to_sequencing_data line 165")
-# tag_to_sequencing_data
-# print("tag_to_samplename")
-# tag_to_samplename
+
 ################################################################################
 ################################################################################
 ################################################################################
@@ -177,11 +166,10 @@ tag_to_samplename <- metadata[tag_to_sequencing_data, arguments[6]]
 
 
 
-print("begin stripchart Reads per sample, line 179")
+
 
 # plot the number of reads per sample binned by sample origin (environmental samples and controls)
 data_by_sample <- split(rowSums(DATA), tag_to_samplename)
-
 stripchart(
 	data_by_sample, 
 	las = 2, 
@@ -215,8 +203,7 @@ polygon(
 abline(h = median(rowSums(DATA)), lty = 2)
 
 # plot total sum of reads per dup/OTU across samples
-print("begin plot total sum of reads per dup/OTU across samples, line 215")
-par <- par_orig
+par() <- par_orig
 plot(
 	colSums(DATA), 
 	# log = "y", 
@@ -229,19 +216,19 @@ plot(
 
 # create matrix of tag sequence and library number
 TAG_LIB <- strsplit(rownames(DATA), "_")
-
-TAG_LIB <- do.call(rbind, TAG_LIB)[,c(1,2)]
+TAG_LIB <- do.call(rbind, TAG_LIB)[,c(4,2)]
 colnames(TAG_LIB) <- c("Tag", "Lib")
 
 # bind tag sequence and library number to OTU table; must be a dataframe to store numbers/text
 DATA.df <- cbind(TAG_LIB, as.data.frame(DATA))
 
+
 # Order the OTU data the same as the sequencing pool sample data
-# DATA.df <- DATA.df[
-					 # match(
-					 # interaction(metadata[c("tag_sequence", "library")]), 
-					 # interaction(DATA.df[c("Tag", "Lib")])),
-				 # ]
+DATA.df <- DATA.df[
+					match(
+					interaction(metadata[c("tag_sequence", "library")]), 
+					interaction(DATA.df[c("Tag", "Lib")])),
+				]
 
 
 # make a vector of sample names in the right order (corresponding to the tag sequence from OTU table)
@@ -265,20 +252,19 @@ DATA.df <- cbind(TAG_LIB, as.data.frame(DATA))
 
 # add those to the data frame and check it out
 DATA.df <- cbind(
-	sample_name = tag_to_samplename, 
-#	sample_name = metadata[, arguments[6]], 
+	sample_name = metadata[, arguments[6]], 
 	sample_type = metadata[,arguments[7]], 
 	DATA.df
 	)
- 
+	
+# DATA.df[,1:5]
 
 # Incorporate sample name into rownames of DATA (otu table stored as matrix)
 # rownames(DATA) <- paste(sample_name, rownames(DATA), sep = "_")
 
 # order by sample name
 DATA.df <- DATA.df[order(DATA.df$sample_name),]
-#print("DATA.df[,1:5] line 274")
-#DATA.df[,1:5]
+
 # plot number of reads per sample:
 # reads_per_sample <- rowSums(DATA.df[,5:ncol(DATA.df)])
 # plot(sort(reads_per_sample), main = "reads per sample", xaxt = "n", ann=FALSE)
@@ -293,17 +279,13 @@ sample_reads <- as.numeric(rowSums(DATA.df[,5:ncol(DATA.df)]))
 # plot(sample_reads) # no need to plot this; plotted above, but this is in order as above
 
 # PLOT RICHNESS AGAINST READS
-print("begin plot richness against reads, line 293")
-
 plot(sample_reads, sample_rich, xlab = "Reads per Sample", ylab = "Total Number of OTUs")
 lm_rich_reads <- lm(sample_rich~sample_reads)
 # summary(lm_rich_reads) # MAKE THIS PRINT
 
-#split_shan <- split(sample_shan, paste(DATA.df[, "sample_name"], DATA.df[, "Tag"], DATA.df[, "Lib"]))
-split_shan <- split(sample_shan, paste(DATA.df[, "sample_name"]))
-split_rich <- split(sample_rich, paste(DATA.df[, "sample_name"]))
-split_reads <- split(sample_reads, paste(DATA.df[, "sample_name"]))
-print("begin boxplot shannon index, line 304")
+split_shan <- split(sample_shan, paste(DATA.df[, "sample_name"], DATA.df[, "Tag"], DATA.df[, "Lib"]))
+split_rich <- split(sample_rich, paste(DATA.df[, "sample_name"], DATA.df[, "Tag"], DATA.df[, "Lib"]))
+split_reads <- split(sample_reads, paste(DATA.df[, "sample_name"], DATA.df[, "Tag"], DATA.df[, "Lib"]))
 
 # BOXPLOT SHANNON INDEX
 par(mar=c(4,6,1,1), cex.axis=0.5)
@@ -318,7 +300,6 @@ boxplot(
 )
 abline(h = which(!duplicated(rev(DATA.df[,"sample_name"]))) -0.5, lty = 2)
 
-print("begin plot cluster richness, line 321")
 # PLOT CLUSTER RICHNESS
 # pdf(file = "cluster_richness.pdf", width = 10, height = 7)
 par(mar=c(4,6,1,1), cex.axis=0.5)
@@ -340,7 +321,6 @@ abline(h = which(!duplicated(rev(DATA.df[,"sample_name"]))) -0.5, lty = 2, col =
 
 # PLOT TOTAL READS
 # pdf(file = "total_reads.pdf", width = 10, height = 7)
-print("begin stripchart total reads, line 343")
 par(mar=c(4,6,1,1), cex.axis=0.5)
 stripchart(
 	x = split_reads,
@@ -355,7 +335,7 @@ stripchart(
 abline(h = which(!duplicated(rev(DATA.df[,"sample_name"]))) -0.5, lty = 2, col = "lightgrey")
 # dev.off()
 
-print("begin stripchart shannon index, line 358")
+
 # PLOT SHANNON INDEX
 # pdf(file = "shannon_index.pdf", width = 10, height = 7)
 par(mar=c(4,6,1,1), cex.axis=0.5)
@@ -383,11 +363,9 @@ abline(h = which(!duplicated(rev(DATA.df[,"sample_name"]))) -0.5, lty = 2, col =
 
 # Note the removal of the controls!
 DATA.env <- droplevels(DATA.df[DATA.df$sample_type=="environmental",])
-DATA.env[,1:6]
 rownames(DATA.env) <- paste(DATA.env$sample_name, DATA.env$Tag, DATA.env$Lib)
-
 DATA.mat <- as.matrix(DATA.env[,5:ncol(DATA.env)])
-
+# DATA.env[,1:6]
 
 # Calculate richness for the environmental samples
 rich_env <- as.numeric(rowSums(DATA.env[,5:ncol(DATA.df)] > 0))
@@ -398,9 +376,8 @@ rich_env <- as.numeric(rowSums(DATA.env[,5:ncol(DATA.df)] > 0))
 min_reads <- min(rowSums(DATA.mat))
 RARE <- rarefy(DATA.mat, min_reads)
 # str(RARE)
-rare_rich <- split(as.numeric(RARE), paste(DATA.env[, "sample_name"]))
+rare_rich <- split(as.numeric(RARE), paste(DATA.env[, "sample_name"], DATA.env[, "Tag"], DATA.env[, "Lib"]))
 
-print("begin stripchart cluster richness, line 396")
 # PLOT CLUSTER RICHNESS
 # pdf(file = "rarefied_richness.pdf", width = 10, height = 7)
 par(mar=c(4,6,1,1), cex.axis=0.5)
@@ -417,7 +394,7 @@ stripchart(
 abline(h = which(!duplicated(rev(DATA.env[,"sample_name"]))) -0.5, lty = 2, col = "lightgrey")
 # dev.off()
 
-print("begin Plot rarefaction curves, line 411")
+
 # Plot rarefaction curves
 rarecurve(DATA.mat, step = 10000, sample = min_reads, col = "blue", cex = 0.6, label=FALSE, main = "Rarefaction Curves")
 points(rowSums(DATA.mat), rich_env, pch=20, cex = 0.5, col = DATA.env$sample_name)
@@ -439,115 +416,52 @@ rich_df <- data.frame(DATA.env[,1:4], tag_levels, rarefied_richness=as.numeric(R
 # plot(rich_df$rarefied_richness, col=rich_df$sample_name)
 
 
-print("begin plot proportion of reads, line 433")
+
 # plot proportion of reads for a sampling of OTUs
 reads_per_tag <- rowSums(DATA.df[,5:ncol(DATA.df)])
-#par(mfrow=c(2,2))
+par(mfrow=c(2,2))
 for(i in 1:4){
 	plot(DATA.df[,4+i]/reads_per_tag, ylab = "Proportion of reads", xaxt = "n", xlab="", pch=19, cex = 0.9, main=paste("Cluster ", i))
 	abline(v = which(!duplicated(DATA.df[,"sample_name"])) -0.5, lty = 2, col = "lightgrey")
 	axis(1, at=1:nrow(DATA.df), labels = DATA.df$sample_name, las = 2, cex.axis = 0.8)
 }
 
-# :::::::::::::::::: EXPORT NEW OTU TABLE FOR BIOM CONVERSION :::::::::::::::::::::::::::::
 
-print("Create new OTU table for biom conversion")
-ODATA <- read.csv(otu_file, row.names = 1)
-# for clustered data, replace "DUP" with "OTU"
-rownames(ODATA) <- gsub("DUP_", "OTU_", rownames(ODATA))
-# change the column names from tag_ to sample name from metadata file.  This makes more sense in the final analysis
-#colnames(ODATA)
-#tag_to_samplename
-#colnames(ODATA) <- c(as.character(sample_name[1]),as.character(sample_name[2]),as.character(sample_name[3]))
-colnames(ODATA) <- c(as.character(tag_to_samplename))
-ODATA <- cbind(DUP_ID = rownames(ODATA),ODATA)
-#print("ODATA")
-#ODATA[1:6,]
-rnames<-rownames(ODATA)
-rownames(ODATA) <- NULL
-ODATA2<-ODATA[,c("DUP_ID",t(sample_names))]
-rownames(ODATA2)<-rnames
-#ODATA2[1:6,]
-write.table(ODATA2, paste(analysis_dir,"/OTU_table.txt",sep=""), sep="\t",row.names=FALSE,quote = FALSE)
-# :::::::::::::::::: EXPORT NEW OTU TABLE FOR BIOM CONVERSION :::::::::::::::::::::::::::::
+########################################################################################################
+# COMMUNITY LEVEL INDICES
+########################################################################################################
+# Compute distance metric between each replicate (library) for each tag (25 in the case of the time series data)
+## takes a while...
+## note 20150326; changed "DATA.df" to "DATA.env" to run this on ONLY the environmental samples.
+BC_within_tag <- sapply(split(DATA.env[,5:ncol(DATA.env)], DATA.env$Tag), vegdist)
 
-# community<-FALSE
-# if(FALSE)
-# {
-# ########################################################################################################
-# # COMMUNITY LEVEL INDICES
-# ########################################################################################################
-# # Compute distance metric between each replicate (library) for each tag (25 in the case of the time series data)
-# ## takes a while...
-# ## note 20150326; changed "DATA.df" to "DATA.env" to run this on ONLY the environmental samples.
-# BC_within_tag <- sapply(split(DATA.env[,5:ncol(DATA.env)], DATA.env$Tag), vegdist)
-# cat ("BC within tag") # print to screen
-# BC_within_tag
-# # only two replicates per tag, so mean is unnecessary
- # BC_within_tag_mean <- apply(BC_within_tag, 2, mean)
+# only two replicates per tag, so mean is unnecessary
+# BC_within_tag_mean <- apply(BC_within_tag, 2, mean)
 
-# ## Compute distance metric between each replicate (library) for each tag (25 in the case of the time series data -- 22 excluding controls)
-# BC_between_tag <- sapply(split(DATA.env[,5:ncol(DATA.env)], DATA.env$sample_name), vegdist, simplify = FALSE)
-# cat ("BC between tag1") # print to screen
-# BC between tag
-# ## drop samples with fewer than 15 points ()
- # BC_between_tag <- BC_between_tag[-which(sapply(BC_between_tag, length) < 15)]
-# ## convert to standard (i.e. not distance) matrix
-# BC_between_tag <- lapply(BC_between_tag, as.matrix)
-# cat ("BC between tag") # print to screen
-# BC_between_tag
+## Compute distance metric between each replicate (library) for each tag (25 in the case of the time series data -- 22 excluding controls)
+BC_between_tag <- sapply(split(DATA.env[,5:ncol(DATA.env)], DATA.env$sample_name), vegdist, simplify = FALSE)
+## drop samples with fewer than 15 points ()
+# BC_between_tag <- BC_between_tag[-which(sapply(BC_between_tag, length) < 15)]
+## convert to standard (i.e. not distance) matrix
+BC_between_tag <- lapply(BC_between_tag, as.matrix)
 
- # lower_quadrant_mean <- function(x){
- # cat ("x ",x," tag\n") # print to screen
-	 # mean_x <- mean(x[2:4, 1:2])
-	 # mean_x
- # }
+lower_quadrant_mean <- function(x){
+	mean_x <- mean(x[2:4, 1:2])
+	mean_x
+}
 
 
- # BC_between_tag_mean <- sapply(BC_between_tag, lower_quadrant_mean)
+BC_between_tag_mean <- sapply(BC_between_tag, lower_quadrant_mean)
 
-# ########################################################################################################
-# # GENERATE A BOXPLOT
-# ########################################################################################################
- # pdf(file = "BC_dis_boxplot.pdf")
- # boxplot(
-	 # x = list(BC_within_tag, BC_between_tag_mean),
-	 # ylim = c(0,1),
-	 # ylab = "Mean Bray-Curtis Dissimilarity",
-	 # xaxt = "n"
- # )
- # axis(
-	 # side = 1,
-	 # at = c(1,2),
-	 # tick = FALSE,
-	 # line = 1,
-	 # labels = c(
-		 # paste("within tags,\namong libraries\nN = ", length(BC_within_tag), sep = ""),
-		 # paste("among tags,\namong libraries\nN = ", length(BC_between_tag_mean), sep = "")
-	 # )
- # )
- # dev.off()
-# ########################################################################################################
-
-
-
-# ########################################################################################################
-# # GENERATE A STRIPCHART
-# ########################################################################################################
-# pdf(file = "BC_dis_stripchart.pdf")
-# par(mfrow=c(1,1))
-# stripchart(
-	# x = list(BC_within_tag, BC_between_tag),
-	# vertical = TRUE,
-	# method = "jitter",
-	# jitter = 0.2,
-	# pch = 1, col = "black", #bg = "grey",
-	# cex = 0.8,
-	# # las = 2,
-	# ylab = "Mean Bray-Curtis Dissimilarity",
+########################################################################################################
+# GENERATE A BOXPLOT
+########################################################################################################
+# pdf(file = "BC_dis_boxplot.pdf")
+# boxplot(
+	# x = list(BC_within_tag, BC_between_tag_mean),
 	# ylim = c(0,1),
-	# xaxt = "n",
-	# group.names = c("within tags,\namong libraries", "between tags,\nbetween libraries")
+	# ylab = "Mean Bray-Curtis Dissimilarity",
+	# xaxt = "n"
 # )
 # axis(
 	# side = 1,
@@ -559,7 +473,40 @@ write.table(ODATA2, paste(analysis_dir,"/OTU_table.txt",sep=""), sep="\t",row.na
 		# paste("among tags,\namong libraries\nN = ", length(BC_between_tag_mean), sep = "")
 	# )
 # )
-#dev.off()
+# dev.off()
+########################################################################################################
+
+
+
+########################################################################################################
+# GENERATE A STRIPCHART
+########################################################################################################
+# pdf(file = "BC_dis_stripchart.pdf")
+par(mfrow=c(1,1))
+stripchart(
+	x = list(BC_within_tag, BC_between_tag_mean),
+	vertical = TRUE,
+	method = "jitter",
+	jitter = 0.2,
+	pch = 1, col = "black", #bg = "grey",
+	cex = 0.8,
+	# las = 2,
+	ylab = "Mean Bray-Curtis Dissimilarity",
+	ylim = c(0,1),
+	xaxt = "n",
+	group.names = c("within tags,\namong libraries", "between tags,\nbetween libraries")
+)
+axis(
+	side = 1,
+	at = c(1,2),
+	tick = FALSE,
+	line = 1,
+	labels = c(
+		paste("within tags,\namong libraries\nN = ", length(BC_within_tag), sep = ""),
+		paste("among tags,\namong libraries\nN = ", length(BC_between_tag_mean), sep = "")
+	)
+)
+# dev.off()
 ########################################################################################################
 
 
@@ -573,41 +520,40 @@ write.table(ODATA2, paste(analysis_dir,"/OTU_table.txt",sep=""), sep="\t",row.na
 
 # First, consider which OTUs comprise the bulk of the sequence data across samples, to do this,
 ## How many reads were just environmental samples?
-# reads_total_env <- sum(rowSums(DATA.env[,5:ncol(DATA.env)]))
+reads_total_env <- sum(rowSums(DATA.env[,5:ncol(DATA.env)]))
 
-# ## What proportion of those reads were from each OTU?
-# propOTU_total_env <- colSums(DATA.env[,5:ncol(DATA.env)])/reads_total_env
+## What proportion of those reads were from each OTU?
+propOTU_total_env <- colSums(DATA.env[,5:ncol(DATA.env)])/reads_total_env
 
-# ## What proportion of the reads are comprised of the ten most abundant OTUs?
-# top_ten_cumsum <- sum(sort(propOTU_total_env, decreasing = TRUE)[1:10])
-# top10OTU_env <- names(sort(propOTU_total_env, decreasing = TRUE)[1:10])
+## What proportion of the reads are comprised of the ten most abundant OTUs?
+top_ten_cumsum <- sum(sort(propOTU_total_env, decreasing = TRUE)[1:10])
+top10OTU_env <- names(sort(propOTU_total_env, decreasing = TRUE)[1:10])
 
 
-# # Make a new data frame identical to DATA.df except that instead of raw read numbers, numbers are the proportional contribution of each OTU
-# DATA.prop <- data.frame(DATA.df[1:4], DATA.df[,5:ncol(DATA.df)] / rowSums(DATA.df[,5:ncol(DATA.df)]))
+# Make a new data frame identical to DATA.df except that instead of raw read numbers, numbers are the proportional contribution of each OTU
+DATA.prop <- data.frame(DATA.df[1:4], DATA.df[,5:ncol(DATA.df)] / rowSums(DATA.df[,5:ncol(DATA.df)]))
 
-# # to confirm this worked, make sure columns sum to 1!
-# # rowSums(DATA.prop[,5:ncol(DATA.prop)])
+# to confirm this worked, make sure columns sum to 1!
+# rowSums(DATA.prop[,5:ncol(DATA.prop)])
 
-# # consider only the environmental samples, and only the top ten most abundant OTUs:
-# DATA.prop_env <- DATA.prop[DATA.prop$sample_type == "environmental", c(colnames(DATA.prop)[1:4],  top10OTU_env)]
+# consider only the environmental samples, and only the top ten most abundant OTUs:
+DATA.prop_env <- DATA.prop[DATA.prop$sample_type == "environmental", c(colnames(DATA.prop)[1:4],  top10OTU_env)]
 
-# # make a vector of sample tags (now we have tag_levels vector)
-# # sample_tag <- rep(as.factor(c(1,1,1,2,2,2)), 11)
+# make a vector of sample tags (now we have tag_levels vector)
+# sample_tag <- rep(as.factor(c(1,1,1,2,2,2)), 11)
 
-# ## insert into data frame
-# DATA.prop_env <- data.frame(DATA.prop_env[,1:4] , tag_levels, DATA.prop_env[,5:ncol(DATA.prop_env)])
+## insert into data frame
+DATA.prop_env <- data.frame(DATA.prop_env[,1:4] , tag_levels, DATA.prop_env[,5:ncol(DATA.prop_env)])
 
-# ########################################################################################################
-# # PLOT ABUNDANCE OF EACH OTU IN EACH ENVIRONMENTAL SAMPLE BY TAG
-# # pdf(file = "OTU_abundance_by_tag.pdf", width = 5, height = 5)
-# #LINES_POS <- which(!duplicated(DATA.prop_env$sample_name))/2
-# # for(i in top10OTU_env){ # for just OTU_1 use "[1]"
-	# # plot(DATA.prop_env[ DATA.prop_env["tag_levels"] == 1 , i], cex = 0.8, xaxt='n', xlab = "Environmental Sample Number", ylim = c(0, max(DATA.prop_env[, i ])), ylab = "proportional abundance", main = i)
-	# # points(DATA.prop_env[ DATA.prop_env["tag_levels"] == 2 , i], pch = 4, cex = 0.8)
-	# # abline(v = LINES_POS, lty = 2, col = "grey")
-	# # axis(side = 1, at = LINES_POS + 1.5, labels = seq(1:length(which(!duplicated(DATA.prop_env$sample_name)))))
-	# # legend("topright", legend = c("tag 1", "tag 2"), pch = c(1,4), bg = "white")
-# # }
-# }
+########################################################################################################
+# PLOT ABUNDANCE OF EACH OTU IN EACH ENVIRONMENTAL SAMPLE BY TAG
+# pdf(file = "OTU_abundance_by_tag.pdf", width = 5, height = 5)
+LINES_POS <- which(!duplicated(DATA.prop_env$sample_name))/2
+for(i in top10OTU_env){ # for just OTU_1 use "[1]"
+	plot(DATA.prop_env[ DATA.prop_env["tag_levels"] == 1 , i], cex = 0.8, xaxt='n', xlab = "Environmental Sample Number", ylim = c(0, max(DATA.prop_env[, i ])), ylab = "proportional abundance", main = i)
+	points(DATA.prop_env[ DATA.prop_env["tag_levels"] == 2 , i], pch = 4, cex = 0.8)
+	abline(v = LINES_POS, lty = 2, col = "grey")
+	axis(side = 1, at = LINES_POS + 1.5, labels = seq(1:length(which(!duplicated(DATA.prop_env$sample_name)))))
+	legend("topright", legend = c("tag 1", "tag 2"), pch = c(1,4), bg = "white")
+}
 dev.off()
